@@ -5,14 +5,11 @@ dist/
 wheels/
 *.egg-info
 .env
-
-
 .git
 .gitignore
 .dockerignore
 docker-compose*
 README.md
-
 .DS_Store
 .vscode/
 .idea/

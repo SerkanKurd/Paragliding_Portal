@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Tailwind Watch",
+            "type": "shell",
+            "command": "uv run manage.py tailwind start",
+            "presentation": {
+                "group": "dev-env",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Django Server",
+            "type": "shell",
+            "command": "uv run manage.py runserver",
+            "presentation": {
+                "group": "dev-env",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Geliştirme Ortamını Başlat",
+            "dependsOn": [
+                "Tailwind Watch",
+                "Django Server"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
