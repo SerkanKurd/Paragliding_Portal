@@ -1,0 +1,17 @@
+<div id="content" class="grid grid-cols-1 p-6 gap-6 items-start">
+{% for post in posts %}
+<div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all">
+  <div class="card-body">
+    <h2 class="card-title">{{ post.title }}</h2>
+    <div class="flex justify-start gap-2 mb-2">
+      <span class="badge badge-outline">{{ post.author }}</span>
+      <span class="badge badge-outline">{{ post.time|date:"d.m.Y" }}</span>
+    </div>
+    <p>{{ post.translated|striptags }}</p>
+    <div class="justify-end card-actions">
+      <a href="{{ post.link }}/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Aç</a>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>

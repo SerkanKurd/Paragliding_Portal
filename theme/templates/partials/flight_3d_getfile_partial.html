@@ -1,0 +1,30 @@
+<div class="card bg-base-100 shadow-xl border border-base-300 mx-auto max-w-2xl">
+  <div class="card-body">
+    <h2 class="card-title text-2xl font-bold mb-4">
+      <span class="material-symbols-outlined text-primary">paragliding</span>
+      Uçuş İzleme (3D Visualizer)
+    </h2>
+
+    <p class="text-sm opacity-70 mb-6">Uçuş kaydınızı (IGC) yükleyin.</p>
+
+    <form method="POST" action="{% url 'flight_visualizer' %}" enctype="multipart/form-data" hx-boost="false" class="space-y-4">
+      {% csrf_token %}
+
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text font-semibold">IGC Dosyası Seçin</span></label>
+        <input type="file" name="igc_file" accept=".igc" class="file-input file-input-bordered file-input-primary w-full" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block mt-4">
+        <span class="material-symbols-outlined">3d</span>
+        Göster
+      </button>
+    </form>
+
+    <div id="converter-result" class="mt-4"></div>
+
+    <div class="alert alert-info shadow-sm mt-6 py-2">
+      <span class="material-symbols-outlined text-sm">info</span>
+      <span class="text-xs">Dosyalarınız işlendikten sonra sunucumuzdan otomatik olarak silinir.</span>
+    </div>
+  </div>
+</div>

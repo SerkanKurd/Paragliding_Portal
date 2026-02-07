@@ -1,0 +1,77 @@
+<div class="card bg-base-100 shadow-xl border border-base-300 w-full h-[700px] relative">
+    <div id="cesium-loader" class="absolute inset-0 flex items-center justify-center bg-base-100 z-50">
+        <span class="loading loading-ring loading-lg text-primary"></span>
+        <span class="ml-4 font-bold text-lg">3D Arazi ve Rota Yükleniyor...</span>
+    </div>
+    
+    <div id="cesiumContainer" class="w-full h-full rounded-xl overflow-hidden"></div>
+</div>
+
+<script>
+    function initCesium() {
+        // 1. Güvenlik Kontrolü
+        if (typeof Cesium === 'undefined') {
+            setTimeout(initCesium, 100);
+            return;
+        }
+
+        // 2. Hazırlık
+        Cesium.Ion.defaultAccessToken = '{{ cesium_token }}';
+        const rawPoints = {{ flight_points|safe }};
+        
+        // Veriyi düzleştir (Lon, Lat, Alt, Lon, Lat, Alt...)
+        let flatPoints = Array.isArray(rawPoints[0]) ? rawPoints.flat() : rawPoints;
+
+        // --- İrtifa Düzeltme (Offset) ---
+        // Basınç irtifası ile arazi arasındaki farkı kapatmak için +50 metre ekliyoruz
+        const altitudeOffset = 50; 
+        for (let i = 2; i < flatPoints.length; i += 3) {
+            flatPoints[i] += altitudeOffset;
+        }
+
+        // 3. Viewer Başlatma
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrain: Cesium.Terrain.fromWorldTerrain(),
+            // Türkçe ve detaylı isimler için Sentinel-2 veya Bing Maps Aerial with Labels kullanılır
+            baseLayer: Cesium.ImageryLayer.fromWorldImagery({
+                style: Cesium.IonWorldImageryStyle.AERIAL_WITH_LABELS
+            }),
+            baseLayerPicker: false,
+            animation: false,
+            timeline: false,
+            geocoder: false,
+            navigationHelpButton: false,
+            sceneModePicker: false
+        });
+
+        // 4. Uçuş Rotasını Ekleme (Düzeltilmiş Syntax)
+        const flightPath = viewer.entities.add({
+            name: 'Uçuş Rotası',
+            polyline: {
+                positions: Cesium.Cartesian3.fromDegreesArrayHeights(flatPoints),
+                width: 4,
+                material: Cesium.Color.YELLOW,
+                // Dağların arkasında kalan kısımları yarı saydam kırmızı göster
+                depthFailMaterial: new Cesium.PolylineDashMaterialProperty({
+                    color: Cesium.Color.RED.withAlpha(0.5)
+                }),
+                clampToGround: false
+            }
+        });
+
+        // 5. Arazi Ayarları
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+
+        // 6. Odaklanma ve Loader Kapatma
+        viewer.zoomTo(flightPath).then(() => {
+            const loader = document.getElementById('cesium-loader');
+            if (loader) {
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.classList.add('hidden'), 500);
+            }
+        });
+    }
+
+    // Başlat
+    initCesium();
+</script>

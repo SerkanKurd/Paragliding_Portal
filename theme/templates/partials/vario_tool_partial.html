@@ -1,0 +1,124 @@
+<div class="card bg-base-100 shadow-xl border border-base-300 mx-auto max-w-2xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl font-bold flex gap-2">
+            <span class="material-symbols-outlined text-primary">campaign</span>
+            Vario Ses Simülatörü
+        </h2>
+        
+        <div class="flex flex-col items-center justify-center bg-black rounded-xl p-10 my-6 shadow-inner border-4 border-base-300">
+            <span class="text-xs text-success tracking-widest font-bold mb-2">LIFT / SINK</span>
+            <div id="vario-value" class="text-8xl font-mono font-black text-success">0.0</div>
+            <span class="text-xl font-bold mt-2">m/s</span>
+        </div>
+
+        <div class="space-y-6">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-bold">Varyometreyi Ayarla</span>
+                    <span id="slider-label" class="badge badge-outline">0.0 m/s</span>
+                </label>
+                <input type="range" 
+                       min="{{ min_sink }}" 
+                       max="{{ max_lift }}" 
+                       step="{{ step }}" 
+                       value="0" 
+                       class="range range-lg range-primary" 
+                       id="vario-slider"
+                       oninput="updateVario(this.value)">
+                <div class="w-full flex justify-between text-xs px-2 mt-2 font-mono">
+                    <span>{{ min_sink }}</span>
+                    <span>0</span>
+                    <span>+{{ max_lift }}</span>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button id="audio-toggle" class="btn btn-primary btn-block btn-lg" onclick="toggleVario()">
+                    Sesi Başlat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let audioCtx;
+    let gainNode;
+    let isRunning = false;
+    let currentVario = 0;
+    let loopId;
+
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        gainNode = audioCtx.createGain();
+        gainNode.connect(audioCtx.destination);
+    }
+
+    function toggleVario() {
+        if (!audioCtx) initAudio();
+        
+        const btn = document.getElementById('audio-toggle');
+        if (!isRunning) {
+            isRunning = true;
+            btn.innerText = "DURDUR";
+            btn.classList.add('btn-error');
+            audioLoop();
+        } else {
+            isRunning = false;
+            btn.innerText = "SESİ BAŞLAT";
+            btn.classList.remove('btn-error');
+            clearTimeout(loopId);
+        }
+    }
+
+    function updateVario(val) {
+        currentVario = parseFloat(val);
+        const display = document.getElementById('vario-value');
+        const label = document.getElementById('slider-label');
+        
+        display.innerText = (currentVario > 0 ? "+" : "") + currentVario.toFixed(1);
+        label.innerText = display.innerText + " m/s";
+
+        // Renk değişimi: Çökerken kırmızı, yükselirken yeşil
+        if (currentVario > 0.1) display.className = "text-8xl font-mono font-black text-success";
+        else if (currentVario < -1.5) display.className = "text-8xl font-mono font-black text-error";
+        else display.className = "text-8xl font-mono font-black text-info";
+    }
+
+    function audioLoop() {
+        if (!isRunning) return;
+
+        let waitTime = 500; // ms
+
+        if (currentVario >= 0.1) {
+            // YÜKSELİŞ: Kesik ve tiz sesler
+            let frequency = 440 + (currentVario * 200);
+            let duration = 0.3 / (1 + currentVario * 0.5);
+            waitTime = 600 / (1 + currentVario * 0.8);
+            playTone(frequency, duration);
+        } else if (currentVario <= -1.8) {
+            // ÇÖKÜŞ: Kalın ve sürekli uyarı sesi
+            playTone(200, 0.4);
+            waitTime = 450;
+        }
+
+        loopId = setTimeout(audioLoop, waitTime);
+    }
+
+    function playTone(freq, duration) {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+</script>
