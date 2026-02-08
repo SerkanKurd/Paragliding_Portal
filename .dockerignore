@@ -1,5 +1,7 @@
 __pycache__/
 *.py[oc]
+node_modules/
+theme/static_src/node_modules/
 build/
 dist/
 wheels/
