@@ -1,16 +1,17 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from .utilities.IGC_file_parse import convert_igc_to_excel, fligth_data_to_json
-from . import models
+from django.shortcuts import render
 from dotenv import get_key
+
+from . import models
+from .utilities.IGC_file_parse import convert_igc_to_excel, fligth_data_to_json
 
 
 def home(request):
     context = {
-        "utilities": models.Card.objects.all()
-        .order_by("order", "id")
-        .exclude(is_active=False)
+        "utilities": models.Card.objects.all().order_by("order", "id").exclude(is_active=False),
+        # "messages": ["deneme1", "deneme2", "deneme3"],
     }
+
     if request.headers.get("HX-Request"):
         return render(request, "partials/main_partial.html", context)
 

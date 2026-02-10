@@ -15,3 +15,38 @@ dependencies = [
     "psycopg[binary]>=3.3.2",
     "python-dotenv>=1.2.1",
 ]
+
+[tool.ruff]
+# Django projelerinde genellikle 88 veya 100 karakter idealdir
+line-length = 100
+target-version = "py312" # Python sürümüne göre güncelle (sen 3.14 kullanıyordun ama Ruff'ta en güncel stabil olanı seçebilirsin)
+
+[tool.ruff.lint]
+# Kullanılacak kütüphane kuralları
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (Import sıralama - Django için kritik)
+    "B",   # flake8-bugbear
+    "DJ",  # flake8-django (Django'ya özel kurallar!)
+]
+
+ignore = [
+    "E501", # Satır uzunluğu hatalarını yoksay (bazen HTML/URL'lerde kaçınılmaz)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Migration dosyalarında linter kurallarını esnet
+"**/migrations/*" = ["E501", "N806"]
+# Settings dosyasında gizli anahtarlar veya uzun listeler olabilir
+"settings.py" = ["F401", "E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+]
