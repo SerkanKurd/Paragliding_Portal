@@ -22,3 +22,7 @@ echo "🧹 Eski Docker imajları temizleniyor..."
 docker image prune -f
 
 echo "✅ İşlem tamamlandı! Uygulama http://localhost adresinde yayında."
+
+# 5. Docker Hub'a imajı gönder (Opsiyonel)
+docker tag paragliding_portal-web serkankurd/paragliding-portal:latest
+docker push serkankurd/paragliding-portal:latest
