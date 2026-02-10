@@ -5,115 +5,93 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <title>Yamaç Paraşütü Portalı</title>
+
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     {% tailwind_css %}
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script>
-      document.body.addEventListener('htmx:configRequest', (event) => {
+      // CSRF Token Hatasını (400) ve Linter Hatalarını Önleyen Script
+      document.addEventListener('htmx:configRequest', (event) => {
         event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}'
       })
+      
+      // Tema Kalıcılığı: Sayfa yüklenirken hafızadaki temayı anında uygula (Beyaz ekran parlamasını önler)
+      const savedTheme = localStorage.getItem('theme') || 'dark'
+      document.documentElement.setAttribute('data-theme', savedTheme)
     </script>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
   </head>
 
   <body class="bg-base-200 min-h-screen flex flex-col overflow-x-hidden">
-    <div class="drawer lg:drawer-open grow">
+    <nav class="navbar bg-base-300 fixed top-0 left-0 right-0 z-100 w-full px-4 shadow-md">
+      <div class="navbar-start">
+        <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor" class="size-5">
+            <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
+            <path d="M9 4v16"></path>
+            <path d="M14 10l2 2l-2 2"></path>
+          </svg>
+        </label>
+      </div>
+
+      <div class="navbar-center">
+        <div class="font-bold tracking-widest text-m md:text-xl uppercase">YAMAÇ PARAŞÜTÜ PORTALI</div>
+      </div>
+
+      <div class="navbar-end">
+        <label class="swap swap-rotate btn btn-ghost btn-circle btn-sm">
+          <input type="checkbox" class="theme-controller" id="theme-switcher" value="light" />
+          <svg class="swap-off h-7 w-7 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
+          </svg>
+          <svg class="swap-on h-7 w-7 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
+          </svg>
+        </label>
+      </div>
+    </nav>
+
+    <div class="drawer lg:drawer-open grow pt-16">
       <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+
       <div class="drawer-content flex flex-col h-full overflow-y-auto">
-        <!-- Navbar -->
-        <nav class="navbar bg-base-300 fixed top-0 left-0 right-0 z-10 w-full px-4">
-          <div class="navbar-start">
-            <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
-              <!-- Sidebar toggle icon -->
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
-                <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
-                <path d="M9 4v16"></path>
-                <path d="M14 10l2 2l-2 2"></path>
-              </svg>
-            </label>
-          </div>
-          <div class="navbar-center">
-            <div class="px-4">YAMAÇ PARAŞÜTÜ PORTALI</div>
-          </div>
-          <div class="navbar-end">
-            <label class="swap swap-rotate">
-              <!-- this hidden checkbox controls the state -->
-              <input type="checkbox" class="theme-controller" value="light" />
-
-              <!-- sun icon -->
-              <svg class="swap-off h-10 w-10 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
-              </svg>
-
-              <!-- moon icon -->
-              <svg class="swap-on h-10 w-10 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
-              </svg>
-            </label>
-          </div>
-        </nav>
-
-        <div id="content" class="w-full pt-20">
-          <!-- Page content here -->
+        <main id="content" class="w-full p-4 lg:p-8">
           {% block alert %}
             {% include 'includes/alert.html' %}
           {% endblock %}
 
           {% block content %}
-
           {% endblock %}
-        </div>
+        </main>
 
-        <footer class="footer footer-horizontal footer-center bg-base-200 text-base-content rounded p-10">
-          <nav>
-            <div class="grid grid-flow-col gap-4">
-              <a>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="fill-current">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path>
-                </svg>
-              </a>
-              <a>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="fill-current">
-                  <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path>
-                </svg>
-              </a>
-              <a>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="fill-current">
-                  <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"></path>
-                </svg>
-              </a>
-            </div>
-          </nav>
+        <footer class="footer footer-center bg-base-200 text-base-content p-10 mt-auto border-t border-base-300">
           <aside>
-            <p>Copyright © 2026 - serkankurd@gmail.com</p>
+            <p class="font-bold">serkankurd@gmail.com</p>
+            <p>Copyright © 2026 - Tüm Hakları Saklıdır</p>
           </aside>
         </footer>
       </div>
 
-      <div class="drawer-side is-drawer-close:overflow-visible">
+      <div class="drawer-side z-90 top-16">
         <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-        <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
-          <!-- Sidebar content here -->
-          <ul class="menu w-full grow">
-            <!-- List item -->
+        <div class="flex min-h-full flex-col bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
+          <ul class="menu p-4 w-full text-base-content gap-2">
             <li>
-              <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Ana Sayfa" hx-get="/" hx-target="#content" hx-push-url="true">
-                <!-- Home icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+              <button hx-get="/" hx-target="#content" hx-push-url="true" class="flex items-center gap-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor" class="size-5">
                   <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
                   <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 </svg>
                 <span class="is-drawer-close:hidden">Ana Sayfa</span>
               </button>
             </li>
-
-            <!-- List item -->
             <li>
-              <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Ayarlar" hx-get="/settings/" hx-target="#content" hx-push-url="true">
-                <!-- Settings icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+              <button hx-get="/settings/" hx-target="#content" hx-push-url="true" class="flex items-center gap-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor" class="size-5">
                   <path d="M20 7h-9"></path>
                   <path d="M14 17H5"></path>
                   <circle cx="17" cy="17" r="3"></circle>
@@ -126,5 +104,20 @@
         </div>
       </div>
     </div>
+
+    <script>
+      const switcher = document.getElementById('theme-switcher')
+      
+      // Sayfa yenilendiğinde checkbox durumunu senkronize et
+      if (localStorage.getItem('theme') === 'light') {
+        switcher.checked = true
+      }
+      
+      switcher.addEventListener('change', (e) => {
+        const theme = e.target.checked ? 'light' : 'dark'
+        document.documentElement.setAttribute('data-theme', theme)
+        localStorage.setItem('theme', theme)
+      })
+    </script>
   </body>
 </html>

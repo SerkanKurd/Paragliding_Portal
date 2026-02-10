@@ -32,7 +32,7 @@ SECRET_KEY = "django-insecure-(dre%=w8b$m$2%*y5kzch%k9j*@(hr3_%h#2c8d@y-3to0(+cx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["ypportal.serkankurd.uk", "ALLOWED_HOSTS", "localhost", "127.0.0.1,0.0.0.0"]
+ALLOWED_HOSTS = ["ypportal.serkankurd.uk", "ALLOWED_HOSTS", "localhost", "127.0.0.1", "0.0.0.0"]
 
 CSRF_TRUSTED_ORIGINS = ["https://ypportal.serkankurd.uk"]
 
