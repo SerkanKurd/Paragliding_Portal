@@ -38,6 +38,8 @@ CSRF_TRUSTED_ORIGINS = ["https://ypportal.serkankurd.uk"]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+CESIUM_TOKEN = os.environ.get('CESIUM_ION_TOKEN')
+
 # Application definition
 
 INSTALLED_APPS = [

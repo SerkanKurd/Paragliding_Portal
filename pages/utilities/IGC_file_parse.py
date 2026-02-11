@@ -1,6 +1,8 @@
-import pandas as pd
-import os
 import io
+import os
+
+import pandas as pd
+from django.conf import settings
 
 
 def parse_trackpoint(line):
@@ -50,9 +52,7 @@ def getdata(file_data, loginterval=1):
     pilot_name = [line for line in lines if "PILOT" in line][0]
     pilot_name = pilot_name.split(":")[1].strip()
     df = pd.DataFrame([parse_trackpoint(line) for line in flight_data])
-    df["datetime"] = pd.to_datetime(
-        flight_date + " " + df["time"], format="%d%m%y %H:%M:%S"
-    )
+    df["datetime"] = pd.to_datetime(flight_date + " " + df["time"], format="%d%m%y %H:%M:%S")
     df["pilot"] = pilot_name
     df = df[
         [
@@ -81,7 +81,7 @@ def fligth_data_to_json(flight_data):
     df = getdata(flight_data)
     df = df[
         [
-            "longitude", #longitude should be first for Cesium
+            "longitude",  # longitude should be first for Cesium
             "latitude",
             "pressure_altitude_m",
         ]
@@ -90,9 +90,13 @@ def fligth_data_to_json(flight_data):
     return df.to_json(orient="values")
 
 
+def sample_fligth_data():
+    test_file_path = os.path.join(settings.BASE_DIR, "static", "sample_igc_file.igc")
+    if os.path.exists(test_file_path):
+        with open(test_file_path, "r", encoding="utf-8") as f:
+            flight_data = f.read()
+        return fligth_data_to_json(flight_data)
+
+
 if __name__ == "__main__":
-    file_path = "D:/wolf/Documents/Projelerim/Paragliding_Portal/tmp/250519102215.igc"
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        print(f"Generated Excel size: {len(convert_igc_to_excel(content))} bytes")
+    pass

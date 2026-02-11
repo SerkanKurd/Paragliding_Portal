@@ -1,17 +1,48 @@
-<div class="card bg-base-100 shadow-xl border border-base-300 w-full h-[700px] relative">
-    <div id="cesium-loader" class="absolute inset-0 flex items-center justify-center bg-base-100 z-50">
-        <span class="loading loading-ring loading-lg text-primary"></span>
-        <span class="ml-4 font-bold text-lg">3D Arazi ve Rota Yükleniyor...</span>
+<div class="card bg-base-100 shadow-xl border border-base-300 w-full h-[75vh] md:h-[75vh] lg:h-[80vh] relative transition-all duration-500" hx-boost="false">
+    <div id="cesium-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-base-100/90 z-50 rounded-xl">
+        <span class="loading loading-ring loading-lg text-primary scale-150"></span>
+        <span class="mt-4 font-bold text-sm md:text-lg tracking-widest uppercase animate-pulse text-primary">3D Arazi ve Rota Yükleniyor</span>
     </div>
     
-    <div id="cesiumContainer" class="w-full h-full rounded-xl overflow-hidden"></div>
+    <div id="cesiumContainer" class="w-full h-full rounded-xl overflow-hidden shadow-inner"></div>
 </div>
 
-<script>
+<script type="text/javascript">
+    // Declare currentCesiumViewer in a scope accessible for checking and destroying
+    let currentCesiumViewer = null;
+
+    function showLoader() {
+        const loader = document.getElementById('cesium-loader');
+        if (loader) {
+            loader.classList.remove('hidden');
+            loader.classList.remove('opacity-0');
+        }
+    }
+
+    function hideLoader() {
+        const loader = document.getElementById('cesium-loader');
+        if (loader) {
+            loader.classList.add('opacity-0');
+            setTimeout(() => loader.classList.add('hidden'), 500);
+        }
+    }
+
     function initCesium() {
-        // 1. Güvenlik Kontrolü
-        if (typeof Cesium === 'undefined') {
-            setTimeout(initCesium, 100);
+        showLoader(); // Show loader before initialization
+
+        const cesiumContainer = document.getElementById('cesiumContainer');
+
+        // If a viewer already exists, destroy it before creating a new one
+        if (currentCesiumViewer && currentCesiumViewer.container === cesiumContainer) {
+            console.log('Destroying existing Cesium viewer.');
+            currentCesiumViewer.destroy();
+            currentCesiumViewer = null;
+        }
+
+        // 1. Güvenlik Kontrolü (Cesium kütüphanesinin yüklenmesini bekle)
+        if (!window.Cesium) {
+            console.log('Cesium not yet loaded, retrying...');
+            setTimeout(initCesium, 200); // Retry after 200ms
             return;
         }
 
@@ -30,7 +61,7 @@
         }
 
         // 3. Viewer Başlatma
-        const viewer = new Cesium.Viewer('cesiumContainer', {
+        currentCesiumViewer = new Cesium.Viewer('cesiumContainer', {
             terrain: Cesium.Terrain.fromWorldTerrain(),
             // Türkçe ve detaylı isimler için Sentinel-2 veya Bing Maps Aerial with Labels kullanılır
             baseLayer: Cesium.ImageryLayer.fromWorldImagery({
@@ -45,7 +76,7 @@
         });
 
         // 4. Uçuş Rotasını Ekleme (Düzeltilmiş Syntax)
-        const flightPath = viewer.entities.add({
+        const flightPath = currentCesiumViewer.entities.add({
             name: 'Uçuş Rotası',
             polyline: {
                 positions: Cesium.Cartesian3.fromDegreesArrayHeights(flatPoints),
@@ -60,18 +91,25 @@
         });
 
         // 5. Arazi Ayarları
-        viewer.scene.globe.depthTestAgainstTerrain = true;
+        currentCesiumViewer.scene.globe.depthTestAgainstTerrain = true;
 
         // 6. Odaklanma ve Loader Kapatma
-        viewer.zoomTo(flightPath).then(() => {
-            const loader = document.getElementById('cesium-loader');
-            if (loader) {
-                loader.classList.add('opacity-0');
-                setTimeout(() => loader.classList.add('hidden'), 500);
-            }
+        currentCesiumViewer.zoomTo(flightPath).then(() => {
+            hideLoader(); // Hide loader after successful initialization and zoom
+        }).catch(error => {
+            console.error('Error during Cesium initialization or zoom:', error);
+            hideLoader(); // Hide loader even if there's an error
         });
     }
 
-    // Başlat
+    // Initial call when the script loads
     initCesium();
+
+    // Re-initialize Cesium when navigating back/forward (bfcache)
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            console.log('Page restored from bfcache. Re-initializing Cesium.');
+            initCesium();
+        }
+    });
 </script>

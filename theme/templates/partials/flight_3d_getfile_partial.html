@@ -9,17 +9,25 @@
 
     <form method="POST" action="{% url 'flight_visualizer' %}" enctype="multipart/form-data" hx-boost="false" class="space-y-4">
       {% csrf_token %}
-
       <div class="form-control w-full">
         <label class="label"><span class="label-text font-semibold">IGC Dosyası Seçin</span></label>
         <input type="file" name="igc_file" accept=".igc" class="file-input file-input-bordered file-input-primary w-full" required />
       </div>
       <button type="submit" class="btn btn-primary btn-block mt-4">
-        <span class="material-symbols-outlined">3d</span>
-        Göster
+        <span class="material-symbols-outlined">Map</span>
+        Dosyayı Göster
       </button>
     </form>
 
+    <form method="POST" action="{% url 'flight_visualizer' %}" hx-boost="false">
+      {% csrf_token %}
+      <input type="hidden" name="show_sample" value="true" />
+
+      <button type="submit" class="btn btn-error btn-block mt-4">
+        <span class="material-symbols-outlined">Map</span>
+        Örnek göster
+      </button>
+    </form>
     <div id="converter-result" class="mt-4"></div>
 
     <div class="alert alert-info shadow-sm mt-6 py-2">

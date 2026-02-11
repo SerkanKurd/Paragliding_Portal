@@ -1,9 +1,9 @@
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
-from dotenv import get_key
 
 from . import models
-from .utilities.IGC_file_parse import convert_igc_to_excel, fligth_data_to_json
+from .utilities.IGC_file_parse import convert_igc_to_excel, fligth_data_to_json, sample_fligth_data
 
 
 def home(request):
@@ -48,17 +48,19 @@ def igc_converter_view(request):
 
 
 def flight_visualizer_view(request):
-    if request.method == "POST" and request.FILES.get("igc_file"):
-        igc_file = request.FILES["igc_file"]
-        igc_content = igc_file.read().decode("utf-8")
+    if request.method == "POST":
+        if request.POST.get("show_sample") == "true":
+            flight_data = sample_fligth_data()
+        else:
+            igc_file = request.FILES["igc_file"]
+            igc_content = igc_file.read().decode("utf-8")
+            flight_data = fligth_data_to_json(igc_content)
 
-        flight_data = fligth_data_to_json(igc_content)
         context = {
             "flight_points": flight_data,
-            "cesium_token": get_key(
-                ".env", "CESIUM_ION_TOKEN"
-            ),  # CesiumIon'dan ücretsiz alabilirsin
+            "cesium_token": settings.CESIUM_TOKEN,
         }
         return render(request, "includes/flight_3d.html", context)
-
-    return render(request, "partials/flight_3d_getfile_partial.html")
+    if request.htmx:
+        return render(request, "partials/flight_3d_getfile_partial.html")
+    return render(request, "includes/flight_3d_getfile.html")
