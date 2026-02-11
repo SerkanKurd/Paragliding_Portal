@@ -1,9 +1,11 @@
 import json
-from django.core.management.base import BaseCommand
-from blog.models import Posts
-from django.conf import settings
 import os
 from datetime import datetime
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+
+from blog.models import Post
 
 
 class Command(BaseCommand):
@@ -44,7 +46,7 @@ class Command(BaseCommand):
                 post_data["time"] = None
 
             post_pk = post_data.pop("id")
-            _, created = Posts.objects.update_or_create(
+            _, created = Post.objects.update_or_create(
                 id=post_pk,
                 defaults=post_data,
             )
