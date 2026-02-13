@@ -1,25 +1,37 @@
-<div id="content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-0 gap-6 items-stretch lg:ml-4 transition-all duration-300">
+<div
+  id="content"
+  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-0 gap-6 items-stretch lg:ml-4 transition-all duration-300"
+>
   {% for utilitie in utilities %}
-    <div class="card w-full h-full bg-base-100 shadow-sm">
-      <div class="card-body">
-        {% if utilitie.badge == 'Yeni' %}
-          <span class="badge badge-xs badge-success">{{ utilitie.badge }}</span>
+  <div class="card w-full h-full bg-base-100 shadow-sm">
+    <div class="card-body">
+      {% if utilitie.badge == 'Yeni' %}
+      <span class="badge badge-xs badge-success">{{ utilitie.badge }}</span>
+      {% else %}
+      <span class="badge badge-xs badge-warning">{{ utilitie.badge }}</span>
+      {% endif %}
+      <div class="flex justify-between">
+        <h2 class="text-3xl font-bold">{{ utilitie.title }}</h2>
+        <span class="material-symbols-outlined">{{ utilitie.icon }}</span>
+      </div>
+      <p>{{ utilitie.description }}</p>
+      <div class="mt-6">
+        {% if utilitie.url == '' or utilitie.url == None %}
+        <button class="btn btn-primary btn-block btn-disabled">
+          <span>Aç</span>
+        </button>
         {% else %}
-          <span class="badge badge-xs badge-warning">{{ utilitie.badge }}</span>
+        <button
+          class="btn btn-primary btn-block"
+          hx-get="{{ utilitie.url }}"
+          hx-target="#content"
+          hx-push-url="true"
+        >
+          <span>Aç</span>
+        </button>
         {% endif %}
-        <div class="flex justify-between">
-          <h2 class="text-3xl font-bold">{{ utilitie.title }}</h2>
-          <span class="material-symbols-outlined">{{ utilitie.icon }}</span>
-        </div>
-        <p>{{ utilitie.description }}</p>
-        <div class="mt-6">
-          {% if utilitie.url == '' or utilitie.url == None %}
-            <button class="btn btn-primary btn-block btn-disabled"><span>Aç</span></button>
-          {% else %}
-            <button class="btn btn-primary btn-block" hx-get="{{ utilitie.url }}" hx-target="#content" hx-push-url="true"><span>Aç</span></button>
-          {% endif %}
-        </div>
       </div>
     </div>
+  </div>
   {% endfor %}
 </div>

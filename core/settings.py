@@ -40,6 +40,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CESIUM_TOKEN = os.environ.get('CESIUM_ION_TOKEN')
 
+LOGIN_REDIRECT_URL = 'home'  # Giriş yapınca gidilecek sayfa
+LOGOUT_REDIRECT_URL = 'login' # Çıkış yapınca gidilecek sayfa
+
 # Application definition
 
 INSTALLED_APPS = [

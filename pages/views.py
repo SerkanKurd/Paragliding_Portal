@@ -1,6 +1,10 @@
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views import generic
 
 from . import models
 from .utilities.IGC_file_parse import convert_igc_to_excel, fligth_data_to_json, sample_fligth_data
@@ -64,3 +68,9 @@ def flight_visualizer_view(request):
     if request.htmx:
         return render(request, "partials/flight_3d_getfile_partial.html")
     return render(request, "includes/flight_3d_getfile.html")
+
+
+class SignUpView(generic.CreateView):
+    form_class = UserCreationForm
+    success_url = reverse_lazy("login")
+    template_name = "registration/signup.html"
