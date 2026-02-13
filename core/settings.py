@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 import platform
+import subprocess
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -38,10 +39,10 @@ CSRF_TRUSTED_ORIGINS = ["https://ypportal.serkankurd.uk"]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-CESIUM_TOKEN = os.environ.get('CESIUM_ION_TOKEN')
+CESIUM_TOKEN = os.environ.get("CESIUM_ION_TOKEN")
 
-LOGIN_REDIRECT_URL = 'home'  # Giriş yapınca gidilecek sayfa
-LOGOUT_REDIRECT_URL = 'login' # Çıkış yapınca gidilecek sayfa
+LOGIN_REDIRECT_URL = "home"  # Giriş yapınca gidilecek sayfa
+LOGOUT_REDIRECT_URL = "login"  # Çıkış yapınca gidilecek sayfa
 
 # Application definition
 
@@ -95,6 +96,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.version_info",
             ],
         },
     },
@@ -166,3 +168,11 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+
+def get_version():
+    version = subprocess.check_output(["uv", "version"]).decode("utf-8").strip().split(" ")[1]
+    return version
+
+
+APP_VERSION = get_version()
