@@ -5,6 +5,9 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
+from django.views.generic import ListView
+
+from paragliding.models import Wing
 
 from . import models
 from .utilities.IGC_file_parse import convert_igc_to_excel, fligth_data_to_json, sample_fligth_data
@@ -74,3 +77,9 @@ class SignUpView(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
+
+
+class WingListView(ListView):
+    model = Wing
+    template_name = "includes/wing_list.html"
+    context_object_name = "wings"

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wings List</title>
+</head>
+<body>
+    <h1>Wings</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Manufacturer</th>
+                <th>Class</th>
+                <th>Weight Range</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for wing in wings %}
+            <tr>
+                <td>{{ wing.name }}</td>
+                <td>{{ wing.manifacture }}</td>
+                <td>{{ wing.wing_class }}</td>
+                <td>{{ wing.weight_min }} - {{ wing.weight_max }} kg</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
