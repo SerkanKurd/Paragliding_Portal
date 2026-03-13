@@ -1,0 +1,88 @@
+<div class="card bg-base-100 shadow-xl border border-base-300 max-w-lg mx-auto p-6">
+    <h2 class="card-title text-primary mb-6">Ağırlık Limit Analizi</h2>
+
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="form-control">
+            <label class="label"><span class="label-text font-bold">Pilot Ağırlığı (kg)</span></label>
+            <input type="number" id="pilotWeight" value="80" class="input input-bordered w-full" oninput="calculateWeight()">
+        </div>
+        <div class="form-control">
+            <label class="label"><span class="label-text font-bold">Ekipman (kg)</span></label>
+            <input type="number" id="gearWeight" value="15" class="input input-bordered w-full" oninput="calculateWeight()">
+        </div>
+    </div>
+
+    <div class="text-center mb-6">
+        <span class="text-sm opacity-60">Toplam Kalkış Ağırlığı:</span>
+        <div class="text-4xl font-black text-secondary"><span id="totalWeightDisplay">95</span> kg</div>
+    </div>
+
+    <div class="relative pt-4">
+        <div class="flex justify-between text-xs font-bold mb-2">
+            <span>ALT: {{ wing.weight_min }} kg</span>
+            <span>ÜST: {{ wing.weight_max }} kg</span>
+        </div>
+
+        <div class="relative h-4 w-full bg-base-200 rounded-full border border-base-300 overflow-visible">
+            <div class="absolute h-full bg-success opacity-20 rounded-full w-full"></div>
+            
+            <div id="weightPointer" class="absolute top-[-10px] transition-all duration-300 ease-out" style="left: 50%;">
+                <div class="flex flex-col items-center">
+                    <div class="w-1.5 h-10 bg-primary rounded-full ring-4 ring-white"></div>
+                    <div id="percentageLabel" class="badge badge-primary badge-sm mt-2">%50</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="weightAlert" class="mt-12 hidden">
+        <div class="alert shadow-lg">
+            <span id="alertMessage"></span>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="minW" value="{{ wing.weight_min }}">
+<input type="hidden" id="maxW" value="{{ wing.weight_max }}">
+
+function calculateWeight() {
+    // Inputlardan değerleri al
+    const pWeight = parseFloat(document.getElementById('pilotWeight').value) || 0;
+    const gWeight = parseFloat(document.getElementById('gearWeight').value) || 0;
+    const minW = parseFloat(document.getElementById('minW').value);
+    const maxW = parseFloat(document.getElementById('maxW').value);
+
+    // Toplamı hesapla ve yazdır
+    const total = pWeight + gWeight;
+    document.getElementById('totalWeightDisplay').innerText = total.toFixed(1);
+
+    // Yüzdeyi hesapla
+    const range = maxW - minW;
+    let percentage = ((total - minW) / range) * 100;
+
+    // Barı hareket ettir (Yüzdeyi 0-100 arasında sınırla ama dışarı taşmasına izin ver)
+    const pointer = document.getElementById('weightPointer');
+    const label = document.getElementById('percentageLabel');
+    
+    pointer.style.left = percentage + "%";
+    label.innerText = "%" + Math.round(percentage);
+
+    // Uyarı Sistemini Yönet
+    const alertBox = document.getElementById('weightAlert');
+    const alertMsg = document.getElementById('alertMessage');
+
+    if (percentage > 100) {
+        alertBox.classList.remove('hidden');
+        alertBox.querySelector('.alert').className = "alert alert-error shadow-lg";
+        alertMsg.innerText = "⚠️ Limit Üstündesin! Kanat uçuş karakteri sertleşecektir.";
+    } else if (percentage < 0) {
+        alertBox.classList.remove('hidden');
+        alertBox.querySelector('.alert').className = "alert alert-warning shadow-lg";
+        alertMsg.innerText = "⚠️ Limit Altındasın! Kanat kapanmalara karşı daha hassas olabilir.";
+    } else {
+        alertBox.classList.add('hidden');
+    }
+}
+
+// Sayfa yüklendiğinde ilk hesaplamayı yap
+window.onload = calculateWeight;
