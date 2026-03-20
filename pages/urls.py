@@ -11,4 +11,5 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("signup/", views.SignUpView.as_view(), name="signup"),
     path("wings/", views.WingListView.as_view(), name="wing_list"),
+    path("weight_control/", views.WingListView.as_view(), name="wing_list"),
 ]
