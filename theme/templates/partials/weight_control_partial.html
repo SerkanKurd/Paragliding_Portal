@@ -1,0 +1,258 @@
+<div
+  class="card bg-base-100 shadow-xl border border-base-300 max-w-lg mx-auto p-6"
+>
+  <h2 class="card-title text-primary mb-6">Kanat Limit Analizi</h2>
+
+  <div class="form-control w-full mb-6">
+    <label class="label"
+      ><span class="label-text font-bold">Kanat Seçin</span></label
+    >
+    <input
+      type="text"
+      id="wingSearch"
+      placeholder="Kanat ara..."
+      class="input input-bordered input-sm w-full mb-2"
+      onkeyup="filterWings()"
+    />
+    <select
+      id="wingSelect"
+      class="select select-bordered w-full"
+      onchange="updateWingLimits()"
+    >
+      <option disabled selected>Kanat seçiniz...</option>
+      {% for wing in wings %}
+      <option
+        value="{{ wing.id }}"
+        data-min="{{ wing.weight_min }}"
+        data-max="{{ wing.weight_max }}"
+      >
+        {{ wing.manifacture }} - {{ wing.name }} ({{ wing.weight_min }}-{{
+        wing.weight_max }} kg)
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <input type="hidden" id="minW" value="0" />
+  <input type="hidden" id="maxW" value="0" />
+
+  <div class="grid grid-cols-2 gap-4 mb-8">
+    <div class="form-control">
+      <label class="label"
+        ><span class="label-text font-semibold">Pilot Kilosu</span></label
+      >
+      <input
+        type="number"
+        id="pilotWeight"
+        value="80"
+        class="input input-bordered w-full"
+        oninput="calculateWeight()"
+      />
+    </div>
+    <div class="form-control">
+      <label class="label"
+        ><span class="label-text font-semibold">Ekipman</span></label
+      >
+      <input
+        type="number"
+        id="gearWeight"
+        value="15"
+        class="input input-bordered w-full"
+        oninput="calculateWeight()"
+      />
+    </div>
+  </div>
+
+  <div id="resultArea" class="hidden">
+    <div class="text-center mb-6">
+      <span class="text-sm opacity-60">Toplam Kalkış Ağırlığı:</span>
+      <div class="text-4xl font-black text-secondary">
+        <span id="totalWeightDisplay">--</span> kg
+      </div>
+    </div>
+
+    <div class="relative pt-6">
+      <div class="flex justify-between text-xs font-bold mb-2">
+        <span id="labelMin">--</span>
+        <span id="labelMax">--</span>
+      </div>
+
+      <div
+        class="relative h-4 w-full bg-base-200 rounded-full border border-base-300"
+      >
+        <div
+          class="absolute h-full rounded-full w-full opacity-40"
+          style="
+            background: linear-gradient(
+              to right,
+              #facc15 0%,
+              #4ade80 30%,
+              #22c55e 50%,
+              #4ade80 70%,
+              #facc15 100%
+            );
+          "
+        ></div>
+
+        <div
+          id="weightPointer"
+          class="absolute top-[-10px] transition-all duration-300 z-10"
+          style="left: 0%; transform: translateX(-50%)"
+        >
+          <div class="flex flex-col items-center">
+            <div
+              class="w-1.5 h-10 bg-primary rounded-full ring-2 ring-white"
+            ></div>
+            <div id="percentageLabel" class="badge badge-primary badge-sm mt-2">
+              %0
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="weightAlert" class="mt-12 hidden">
+      <div class="alert shadow-lg">
+        <span id="alertMessage"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  console.log("Weight Analysis script loaded");
+
+  function filterWings() {
+    const input = document.getElementById("wingSearch");
+    const select = document.getElementById("wingSelect");
+    if (!input || !select) return;
+
+    const filter = input.value.toLowerCase();
+    const options = select.getElementsByTagName("option");
+
+    for (let i = 1; i < options.length; i++) {
+      const txtValue = options[i].textContent || options[i].innerText;
+      options[i].hidden = txtValue.toLowerCase().indexOf(filter) === -1;
+    }
+  }
+
+  function updateWingLimits() {
+    console.log("updateWingLimits called");
+    const select = document.getElementById("wingSelect");
+    if (!select) return;
+    const selectedOption = select.options[select.selectedIndex];
+
+    if (selectedOption && selectedOption.value) {
+      // Sonuç alanını göster
+      const resultArea = document.getElementById("resultArea");
+      if (resultArea) resultArea.classList.remove("hidden");
+
+      // Verileri al
+      const minW = parseFloat(selectedOption.getAttribute("data-min")) || 0;
+      const maxW = parseFloat(selectedOption.getAttribute("data-max")) || 0;
+
+      // Inputlara yaz
+      const minWInput = document.getElementById("minW");
+      const maxWInput = document.getElementById("maxW");
+      if (minWInput) minWInput.value = minW;
+      if (maxWInput) maxWInput.value = maxW;
+
+      // Etiketleri güncelle
+      const labelMin = document.getElementById("labelMin");
+      const labelMax = document.getElementById("labelMax");
+      if (labelMin) labelMin.innerText = minW + " kg";
+      if (labelMax) labelMax.innerText = maxW + " kg";
+
+      // Hesaplamayı tetikle
+      calculateWeight();
+    }
+  }
+
+  function calculateWeight() {
+    console.log("calculateWeight called");
+    // Inputlardan değerleri al
+    const pilotWeightEl = document.getElementById("pilotWeight");
+    const gearWeightEl = document.getElementById("gearWeight");
+    const minWEl = document.getElementById("minW");
+    const maxWEl = document.getElementById("maxW");
+
+    if (!pilotWeightEl || !gearWeightEl || !minWEl || !maxWEl) return;
+
+    const pWeight = parseFloat(pilotWeightEl.value) || 0;
+    const gWeight = parseFloat(gearWeightEl.value) || 0;
+    const minW = parseFloat(minWEl.value) || 0;
+    const maxW = parseFloat(maxWEl.value) || 0;
+
+    // Toplamı hesapla ve yazdır
+    const total = pWeight + gWeight;
+    const totalWeightDisplay = document.getElementById("totalWeightDisplay");
+    if (totalWeightDisplay) totalWeightDisplay.innerText = total.toFixed(1);
+
+    // Yüzdeyi hesapla
+    const range = maxW - minW;
+    const pointer = document.getElementById("weightPointer");
+    const label = document.getElementById("percentageLabel");
+
+    if (!pointer || !label) return;
+
+    if (range <= 0) {
+      pointer.style.left = "0%";
+      label.innerText = "%0";
+      return;
+    }
+
+    const percentage = ((total - minW) / range) * 100;
+
+    // Barı hareket ettir
+    const visualPercentage = Math.max(0, Math.min(100, percentage));
+    pointer.style.left = visualPercentage + "%";
+    label.innerText = "%" + Math.round(percentage);
+
+    // Uyarı Sistemi
+    const alertBox = document.getElementById("weightAlert");
+    const alertMsg = document.getElementById("alertMessage");
+
+    if (percentage > 100) {
+      if (alertBox && alertMsg) {
+        alertBox.classList.remove("hidden");
+        const alertInner = alertBox.querySelector(".alert");
+        if (alertInner) alertInner.className = "alert alert-error shadow-lg";
+        alertMsg.innerText =
+          "⚠️ Limit Üstündesin! Kanat uçuş karakteri sertleşecektir.";
+      }
+      label.className = "badge badge-error badge-sm mt-2";
+    } else if (percentage < 0) {
+      if (alertBox && alertMsg) {
+        alertBox.classList.remove("hidden");
+        const alertInner = alertBox.querySelector(".alert");
+        if (alertInner) alertInner.className = "alert alert-warning shadow-lg";
+        alertMsg.innerText =
+          "⚠️ Limit Altındasın! Kanat kapanmalara karşı daha hassas olabilir.";
+      }
+      label.className = "badge badge-warning badge-sm mt-2";
+    } else {
+      if (alertBox) alertBox.classList.add("hidden");
+      label.className = "badge badge-success badge-sm mt-2";
+    }
+  }
+
+  // Fonksiyonları window'a bağla (Fail-safe)
+  window.filterWings = filterWings;
+  window.updateWingLimits = updateWingLimits;
+  window.calculateWeight = calculateWeight;
+
+  // HTMX desteği
+  document.body.addEventListener("htmx:afterSwap", function () {
+    console.log("HTMX afterSwap detected");
+    calculateWeight();
+  });
+
+  // Başlatma
+  if (document.readyState === "complete") {
+    calculateWeight();
+  } else {
+    window.addEventListener("load", calculateWeight);
+  }
+
+  // Fail-safe
+  setTimeout(calculateWeight, 500);
+</script>

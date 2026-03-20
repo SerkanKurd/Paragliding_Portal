@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -52,6 +51,13 @@ def igc_converter_view(request):
     if request.headers.get("HX-Request"):
         return render(request, "partials/igc_converter_partial.html")
     return render(request, "includes/igc_converter.html")
+
+
+def weight_control_view(request):
+    context = {"wings": Wing.objects.all()}
+    if request.headers.get("HX-Request"):
+        return render(request, "partials/weight_control_partial.html", context)
+    return render(request, "includes/weight_control.html", context)
 
 
 def flight_visualizer_view(request):
