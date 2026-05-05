@@ -89,3 +89,12 @@ class WingListView(ListView):
     model = Wing
     template_name = "includes/wing_list.html"
     context_object_name = "wings"
+
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def profile_view(request):
+    if request.headers.get("HX-Request"):
+        return render(request, "partials/profile_partial.html")
+    return render(request, "includes/profile.html")

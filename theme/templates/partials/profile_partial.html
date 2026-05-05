@@ -1,0 +1,37 @@
+<div class="max-w-4xl mx-auto p-4 md:p-8">
+    <div class="card bg-base-100 shadow-xl border border-base-300">
+        <div class="card-body">
+            <h2 class="card-title text-3xl font-bold text-primary mb-6">Profilim</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold border-b border-base-300 pb-2 mb-4">Kişisel Bilgiler</h3>
+                    <div class="space-y-3">
+                        <p><span class="font-bold text-base-content/70">Kullanıcı Adı:</span> {{ user.username }}</p>
+                        <p><span class="font-bold text-base-content/70">E-posta:</span> {{ user.email|default:"Belirtilmemiş" }}</p>
+                        <p><span class="font-bold text-base-content/70">Ad:</span> {{ user.first_name|default:"-" }}</p>
+                        <p><span class="font-bold text-base-content/70">Soyad:</span> {{ user.last_name|default:"-" }}</p>
+                        <p><span class="font-bold text-base-content/70">Kayıt Tarihi:</span> {{ user.date_joined|date:"d M Y" }}</p>
+                    </div>
+                    <button class="btn btn-outline btn-primary mt-6">Bilgileri Düzenle</button>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold border-b border-base-300 pb-2 mb-4">Uçuş İstatistikleri</h3>
+                    <div class="stats stats-vertical shadow w-full">
+                      <div class="stat">
+                        <div class="stat-title">Toplam Uçuş</div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-desc">Kayıtlı uçuş verisi bulunamadı</div>
+                      </div>
+                      
+                      <div class="stat">
+                        <div class="stat-title">Toplam Süre</div>
+                        <div class="stat-value">0s</div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

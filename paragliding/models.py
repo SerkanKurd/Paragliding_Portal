@@ -75,3 +75,27 @@ class Wing(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class Harness(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)  # noqa: DJ001
+    manufacture = models.CharField(max_length=255, blank=True, null=True)  # noqa: DJ001
+    harness_type = models.CharField(max_length=50, blank=True, null=True)  # noqa: DJ001
+    size = models.CharField(max_length=10, blank=True, null=True)  # noqa: DJ001
+    weight = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.manufacture} {self.name}"
+
+
+class Reserve(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)  # noqa: DJ001
+    manufacture = models.CharField(max_length=255, blank=True, null=True)  # noqa: DJ001
+    reserve_type = models.CharField(max_length=50, blank=True, null=True)  # noqa: DJ001
+    size = models.CharField(max_length=10, blank=True, null=True)  # noqa: DJ001
+    weight_max = models.IntegerField(blank=True, null=True)
+    weight_min = models.IntegerField(blank=True, null=True)
+    manufacture_date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.manufacture} {self.name}"

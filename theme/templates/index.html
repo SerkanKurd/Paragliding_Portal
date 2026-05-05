@@ -158,7 +158,7 @@
                 <a href="{% url 'login' %}" class="btn btn-ghost">Giriş Yap</a>
                 {% endif %}
 
-                <a href="#" class="btn btn-ghost">Profil</a>
+                <a href="{% url 'profile' %}" hx-get="{% url 'profile' %}" hx-target="#content" hx-push-url="true" class="btn btn-ghost">Profil</a>
                 <a href="#" class="btn btn-ghost">Ayarlar</a>
               </li>
             </ul>
