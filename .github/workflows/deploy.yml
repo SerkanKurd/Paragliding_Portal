@@ -24,7 +24,7 @@ jobs:
       - name: 🟢 Node.js Kurulumu
         uses: actions/setup-node@v4
         with:
-          node-size: '20'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: 'theme/static_src/package-lock.json'
 
@@ -60,7 +60,10 @@ jobs:
           context: .
           file: ./Dockerfile # Eğer Dockerfile'ın farklı bir yerdeyse burayı düzenleyebilirsin
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
+          
