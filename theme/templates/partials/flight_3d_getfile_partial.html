@@ -7,11 +7,18 @@
 
     <p class="text-sm opacity-70 mb-6">Uçuş kaydınızı (IGC) yükleyin.</p>
 
+    {% if error %}
+    <div class="alert alert-error shadow-sm mb-4">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
     <form method="POST" action="{% url 'flight_visualizer' %}" enctype="multipart/form-data" hx-boost="false" class="space-y-4">
       {% csrf_token %}
       <div class="form-control w-full">
         <label class="label"><span class="label-text font-semibold">IGC Dosyası Seçin</span></label>
-        <input type="file" name="igc_file" accept=".igc" class="file-input file-input-bordered file-input-primary w-full" required />
+        <input type="file" name="igc_file" accept=".igc,.IGC" class="file-input file-input-bordered file-input-primary w-full" required />
       </div>
       <button type="submit" class="btn btn-primary btn-block mt-4">
         <span class="material-symbols-outlined">Map</span>

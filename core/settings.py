@@ -28,16 +28,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-(dre%=w8b$m$2%*y5kzch%k9j*@(hr3_%h#2c8d@y-3to0(+cx"
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-(dre%=w8b$m$2%*y5kzch%k9j*@(hr3_%h#2c8d@y-3to0(+cx")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["ypportal.serkankurd.uk", "ALLOWED_HOSTS", "localhost", "127.0.0.1", "0.0.0.0"]
+allowed_hosts_env = os.environ.get("ALLOWED_HOSTS")
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(",") if host.strip()]
+else:
+    ALLOWED_HOSTS = ["ypportal.serkankurd.uk", "localhost", "127.0.0.1"]
 
-CSRF_TRUSTED_ORIGINS = ["https://ypportal.serkankurd.uk"]
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS", "https://ypportal.serkankurd.uk"
+).split(",")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 CESIUM_TOKEN = os.environ.get("CESIUM_ION_TOKEN")
 
@@ -175,8 +187,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 
 def get_version():
-    version = subprocess.check_output(["uv", "version"]).decode("utf-8").strip().split(" ")[1]
-    return version
+    try:
+        version = subprocess.check_output(["uv", "version"]).decode("utf-8").strip().split(" ")[1]
+        return version
+    except Exception:
+        return "0.3.1"
 
 
 APP_VERSION = get_version()

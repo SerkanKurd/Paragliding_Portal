@@ -73,3 +73,25 @@ class PagesViewsTestCase(TestCase):
         response_htmx = self.client.get(reverse("profile"), HTTP_HX_REQUEST="true")
         self.assertEqual(response_htmx.status_code, 200)
         self.assertTemplateUsed(response_htmx, "partials/profile_partial.html")
+
+    def test_igc_upload_invalid_extension(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        invalid_file = SimpleUploadedFile("test.txt", b"invalid content", content_type="text/plain")
+        response = self.client.post(reverse("igc_converter"), {"igc_file": invalid_file})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Yalnızca .igc veya .IGC", response.content.decode("utf-8"))
+
+    def test_igc_upload_uppercase_extension(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        # Sample valid IGC content
+        igc_data = (
+            b"AXGD123\r\n"
+            b"HFDTE010124\r\n"
+            b"HFPLTPILOT:Test Pilot\r\n"
+            b"B1000003746000N03030000EA0010000200\r\n"
+        )
+        uppercase_file = SimpleUploadedFile("FLIGHT.IGC", igc_data, content_type="text/plain")
+        response = self.client.post(reverse("igc_converter"), {"igc_file": uppercase_file})
+        # Should process without extension or parsing error
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
