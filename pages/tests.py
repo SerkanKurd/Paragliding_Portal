@@ -1,6 +1,6 @@
-from django.test import TestCase, Client
-from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -8,12 +8,12 @@ class PagesViewsTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username="testpilot", password="password123")
-        
+
     def test_home_view(self):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "includes/main.html")
-        
+
         # Test HTMX request
         response_htmx = self.client.get(reverse("home"), HTTP_HX_REQUEST="true")
         self.assertEqual(response_htmx.status_code, 200)
@@ -23,7 +23,7 @@ class PagesViewsTestCase(TestCase):
         response = self.client.get(reverse("vario_simulator"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "includes/vario_tool.html")
-        
+
         # Test HTMX request
         response_htmx = self.client.get(reverse("vario_simulator"), HTTP_HX_REQUEST="true")
         self.assertEqual(response_htmx.status_code, 200)
@@ -33,7 +33,7 @@ class PagesViewsTestCase(TestCase):
         response = self.client.get(reverse("weight_control"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "includes/weight_control.html")
-        
+
         # Test HTMX request
         response_htmx = self.client.get(reverse("weight_control"), HTTP_HX_REQUEST="true")
         self.assertEqual(response_htmx.status_code, 200)
@@ -43,7 +43,7 @@ class PagesViewsTestCase(TestCase):
         response = self.client.get(reverse("signup"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "registration/signup.html")
-        
+
         # Test registration POST
         signup_data = {
             "username": "newpilot",
@@ -61,7 +61,7 @@ class PagesViewsTestCase(TestCase):
     def test_profile_view_redirects_for_anonymous(self):
         response = self.client.get(reverse("profile"))
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f"/accounts/login/?next=/profile/")
+        self.assertRedirects(response, "/accounts/login/?next=/profile/")
 
     def test_profile_view_logged_in(self):
         self.client.login(username="testpilot", password="password123")

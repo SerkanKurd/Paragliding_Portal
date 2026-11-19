@@ -9,10 +9,10 @@ class Post(models.Model):
     author = models.CharField(max_length=100)
     content = models.TextField()
     contentsnippet = models.TextField()
-    translated = models.TextField(null=True, blank=True)
+    translated = models.TextField(null=True, blank=True)  # noqa: DJ001
     time = models.DateTimeField(null=True, blank=True)
     wordpress_id = models.IntegerField(null=True, blank=True)
-    wordpress_url = models.CharField(max_length=255, null=True, blank=True)
+    wordpress_url = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
     isupdate = models.BooleanField()
     cat = models.IntegerField(null=True, blank=True)
 

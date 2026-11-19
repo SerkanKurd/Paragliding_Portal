@@ -5,21 +5,21 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "cookiecutter>=2.6.0",
-    "django>=6.0.1",
-    "django-htmx>=1.27.0",
-    "django-tailwind[reload]>=4.4.2",
-    "gunicorn>=25.0.3",
+    "cookiecutter>=2.7.1",
+    "django>=6.1.3",
+    "django-htmx>=1.29.0",
+    "django-tailwind[reload]>=4.6.0",
+    "gunicorn>=27.0.1",
     "openpyxl>=3.1.5",
-    "pandas>=3.0.0",
-    "psycopg[binary]>=3.3.2",
-    "python-dotenv>=1.2.1",
+    "pandas>=3.1.1",
+    "psycopg[binary]>=3.3.9",
+    "python-dotenv>=1.2.4",
 ]
 
 [tool.ruff]
 # Django projelerinde genellikle 88 veya 100 karakter idealdir
 line-length = 100
-target-version = "py312" # Python sürümüne göre güncelle (sen 3.14 kullanıyordun ama Ruff'ta en güncel stabil olanı seçebilirsin)
+target-version = "py314"
 
 [tool.ruff.lint]
 # Kullanılacak kütüphane kuralları
@@ -48,5 +48,5 @@ indent-style = "space"
 
 [dependency-groups]
 dev = [
-    "ruff>=0.15.0",
+    "ruff>=0.17.5",
 ]

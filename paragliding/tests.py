@@ -1,14 +1,15 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.utils import timezone
-from paragliding.models import Pilot, FlightData, Wing, Harness, Reserve
+
+from paragliding.models import FlightData, Harness, Pilot, Reserve, Wing
 
 User = get_user_model()
 
 class ParaglidingModelsTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testpilot", password="password123")
-        
+
         self.pilot = Pilot.objects.create(
             name="Serkan Kurd",
             level="P4",

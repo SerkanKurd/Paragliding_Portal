@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 import platform
 import subprocess
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -122,7 +123,6 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import sys
 TESTING = 'test' in sys.argv
 
 if TESTING:

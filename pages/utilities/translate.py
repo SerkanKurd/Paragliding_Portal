@@ -1,4 +1,7 @@
+import sqlite3
+
 from googletrans import Translator
+
 
 def translate_agent():
     # 1. Veri Tabanı Bağlantısı
@@ -21,12 +24,12 @@ def translate_agent():
 
             # 4. Veri Tabanını Güncelle
             cursor.execute(
-                "UPDATE yazilar SET tr_metin = ? WHERE id = ?", 
+                "UPDATE yazilar SET tr_metin = ? WHERE id = ?",
                 (translated_text, row_id)
             )
             conn.commit()
             print(f"ID {row_id} başarıyla güncellendi.")
-            
+
         except Exception as e:
             print(f"Hata oluştu: {e}")
 
