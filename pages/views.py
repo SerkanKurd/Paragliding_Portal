@@ -1,9 +1,13 @@
+import logging
+import os
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.http import content_disposition_header
 from django.views import generic
 from django.views.generic import ListView
 
@@ -11,6 +15,8 @@ from paragliding.models import Wing
 
 from . import models
 from .utilities.IGC_file_parse import convert_igc_to_excel, fligth_data_to_json, sample_fligth_data
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -57,8 +63,9 @@ def validate_and_read_igc_file(uploaded_file):
         except UnicodeDecodeError:
             content = raw_data.decode("latin-1")
         return content, None
-    except Exception as e:
-        return None, f"Dosya okunurken bir hata oluştu: {str(e)}"
+    except Exception:
+        logger.exception("IGC dosyası okunamadı")
+        return None, "Dosya okunurken bir hata oluştu."
 
 
 def igc_converter_view(request):
@@ -79,9 +86,13 @@ def igc_converter_view(request):
                 excel_data,
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-            response["Content-Disposition"] = f'attachment; filename="{igc_file.name}.xlsx"'
+            base_name = os.path.splitext(os.path.basename(igc_file.name))[0] or "flight"
+            response["Content-Disposition"] = content_disposition_header(
+                as_attachment=True, filename=f"{base_name}.xlsx"
+            )
             return response
-        except Exception as e:
+        except Exception:
+            logger.exception("IGC dosyası Excel'e dönüştürülemedi")
             template = (
                 "partials/igc_converter_partial.html"
                 if request.headers.get("HX-Request")
@@ -90,7 +101,7 @@ def igc_converter_view(request):
             return render(
                 request,
                 template,
-                {"error": f"IGC dosyası işlenirken bir hata oluştu: {str(e)}"},
+                {"error": "IGC dosyası işlenemedi. Lütfen geçerli bir IGC dosyası yükleyin."},
                 status=400,
             )
 
@@ -123,7 +134,8 @@ def flight_visualizer_view(request):
 
             try:
                 flight_data = fligth_data_to_json(igc_content)
-            except Exception as e:
+            except Exception:
+                logger.exception("IGC dosyası 3D görüntüleme için çözümlenemedi")
                 template = (
                     "partials/flight_3d_getfile_partial.html"
                     if request.headers.get("HX-Request")
@@ -132,7 +144,7 @@ def flight_visualizer_view(request):
                 return render(
                     request,
                     template,
-                    {"error": f"IGC dosyası çözümlenirken hata oluştu: {str(e)}"},
+                    {"error": "IGC dosyası çözümlenemedi. Lütfen geçerli bir IGC dosyası yükleyin."},
                     status=400,
                 )
 
