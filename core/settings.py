@@ -16,6 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -28,11 +29,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-(dre%=w8b$m$2%*y5kzch%k9j*@(hr3_%h#2c8d@y-3to0(+cx")
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
+
+TESTING = "test" in sys.argv
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG or TESTING:
+        # Yalnızca yerel geliştirme ve testler için; production'da asla kullanılmaz.
+        SECRET_KEY = "django-insecure-local-development-only"
+    else:
+        raise ImproperlyConfigured(
+            "SECRET_KEY ortam değişkeni tanımlı değil. Production'da zorunludur."
+        )
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -54,6 +65,17 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
+# HSTS: Cloudflare'de açıksa burada 0 bırakın (tek yerde yönetilmeli).
+# Django'dan açılacaksa kısa bir değerle (ör. 3600) başlayıp kademeli artırın.
+SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get("SECURE_HSTS_INCLUDE_SUBDOMAINS", "False") == "True"
+SECURE_HSTS_PRELOAD = os.environ.get("SECURE_HSTS_PRELOAD", "False") == "True"
+
+# HTTP→HTTPS yönlendirmesi Cloudflare'de ("Always Use HTTPS") yapılıyor.
+# Django'da da açmak yönlendirme döngüsüne yol açabileceği için W008 bilinçli olarak susturuldu.
+SECURE_SSL_REDIRECT = False
+SILENCED_SYSTEM_CHECKS = ["security.W008"]
+
 CESIUM_TOKEN = os.environ.get("CESIUM_ION_TOKEN")
 
 LOGIN_REDIRECT_URL = "home"  # Giriş yapınca gidilecek sayfa
@@ -71,7 +93,6 @@ INSTALLED_APPS = [
     "tailwind",
     "theme",
     "django_htmx",
-    "django_browser_reload",
     "pages",
     "blog",
     "paragliding",
@@ -85,9 +106,13 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
 ]
+
+# Otomatik sayfa yenileme yalnızca geliştirme ortamında yüklenir.
+if DEBUG:
+    INSTALLED_APPS.append("django_browser_reload")
+    MIDDLEWARE.append("django_browser_reload.middleware.BrowserReloadMiddleware")
 
 TAILWIND_APP_NAME = "theme"
 
@@ -122,8 +147,6 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-TESTING = 'test' in sys.argv
 
 if TESTING:
     DATABASES = {

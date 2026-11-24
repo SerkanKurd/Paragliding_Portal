@@ -18,6 +18,8 @@ RUN uv sync --frozen --no-cache
 COPY . .
 
 # Nginx için statikleri topla
-RUN uv run python manage.py collectstatic --no-input
+# collectstatic settings'i yükler; build sırasında gerçek anahtar gerekmez.
+# Bu değer yalnızca bu RUN adımında geçerlidir, imajın ortamına girmez.
+RUN SECRET_KEY=collectstatic-build-only uv run python manage.py collectstatic --no-input
 
 CMD ["uv", "run", "gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]

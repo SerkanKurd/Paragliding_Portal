@@ -95,3 +95,36 @@ class PagesViewsTestCase(TestCase):
         # Should process without extension or parsing error
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    def test_igc_download_filename_is_sanitized(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        igc_data = (
+            b"HFDTE010124\r\n"
+            b"HFPLTPILOT:Test Pilot\r\n"
+            b"B1000003746000N03030000EA0010000200\r\n"
+        )
+        upload = SimpleUploadedFile("uçuş kaydı.igc", igc_data, content_type="text/plain")
+        response = self.client.post(reverse("igc_converter"), {"igc_file": upload})
+        self.assertEqual(response.status_code, 200)
+        disposition = response.headers["Content-Disposition"]
+        self.assertTrue(disposition.startswith("attachment;"))
+        # Türkçe karakterler RFC 5987 ile kodlanır, uzantı tek .xlsx olur
+        self.assertIn("filename*=utf-8''u%C3%A7u%C5%9F%20kayd%C4%B1.xlsx", disposition)
+        self.assertNotIn(".igc", disposition)
+
+    def test_igc_parse_error_does_not_leak_exception(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        broken_file = SimpleUploadedFile("broken.igc", b"not an igc file", content_type="text/plain")
+        with self.assertLogs("pages.views", level="ERROR"):
+            response = self.client.post(reverse("igc_converter"), {"igc_file": broken_file})
+        self.assertEqual(response.status_code, 400)
+        content = response.content.decode("utf-8")
+        self.assertIn("IGC dosyası işlenemedi", content)
+        self.assertNotIn("IndexError", content)
+        self.assertNotIn("list index out of range", content)
+
+    def test_browser_reload_disabled_when_not_debug(self):
+        from django.conf import settings
+        self.assertFalse(settings.DEBUG)
+        self.assertNotIn("django_browser_reload", settings.INSTALLED_APPS)
+        self.assertEqual(self.client.get("/__reload__/events/").status_code, 404)
