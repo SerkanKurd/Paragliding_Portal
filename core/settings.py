@@ -76,6 +76,11 @@ SECURE_HSTS_PRELOAD = os.environ.get("SECURE_HSTS_PRELOAD", "False") == "True"
 SECURE_SSL_REDIRECT = False
 SILENCED_SYSTEM_CHECKS = ["security.W008"]
 
+# HSTS başlığı Cloudflare'de (Edge Certificates → HSTS) ekleniyor; Django tarafı 0 kalırsa
+# W004 uyarısı bilinçli olarak susturulur. Django'dan açılırsa uyarı zaten oluşmaz.
+if SECURE_HSTS_SECONDS == 0:
+    SILENCED_SYSTEM_CHECKS.append("security.W004")
+
 CESIUM_TOKEN = os.environ.get("CESIUM_ION_TOKEN")
 
 LOGIN_REDIRECT_URL = "home"  # Giriş yapınca gidilecek sayfa
