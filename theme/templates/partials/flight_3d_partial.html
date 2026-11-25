@@ -7,7 +7,9 @@
     <div id="cesiumContainer" class="w-full h-full rounded-xl overflow-hidden shadow-inner"></div>
 </div>
 
-<script type="text/javascript">
+{{ flight_points|json_script:"flight-points" }}
+{{ cesium_token|json_script:"cesium-token" }}
+<script type="text/javascript" nonce="{{ csp_nonce }}">
     // Declare currentCesiumViewer in a scope accessible for checking and destroying
     let currentCesiumViewer = null;
 
@@ -47,8 +49,8 @@
         }
 
         // 2. Hazırlık
-        Cesium.Ion.defaultAccessToken = '{{ cesium_token }}';
-        const rawPoints = {{ flight_points|safe }};
+        Cesium.Ion.defaultAccessToken = JSON.parse(document.getElementById('cesium-token').textContent);
+        const rawPoints = JSON.parse(document.getElementById('flight-points').textContent);
         
         // Veriyi düzleştir (Lon, Lat, Alt, Lon, Lat, Alt...)
         let flatPoints = Array.isArray(rawPoints[0]) ? rawPoints.flat() : rawPoints;

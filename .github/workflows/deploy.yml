@@ -46,6 +46,13 @@ jobs:
           DEBUG: "False"
           ALLOWED_HOSTS: example.com
 
+      - name: 🌐 nginx Config Kontrolü
+        # Sunucudakiyle aynı nginx sürümü; 'web' upstream'i test için localhost'a çözülür.
+        run: |
+          docker run --rm --add-host web:127.0.0.1 \
+            -v "$PWD/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro" \
+            nginx:1.25-alpine nginx -t
+
       - name: 🛡️ Bağımlılık Güvenlik Taraması (pip-audit)
         run: |
           uv export --frozen --no-dev --no-hashes --format requirements-txt -o "$RUNNER_TEMP/requirements.txt"

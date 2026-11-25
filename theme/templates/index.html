@@ -16,8 +16,15 @@
 
     {% tailwind_css %}
 
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script>
+    <!-- HTMX'in eklediği inline script'ler sayfanın CSP nonce'unu kullansın -->
+    <meta name="htmx-config" content='{"inlineScriptNonce": "{{ csp_nonce }}"}' />
+    <script
+      src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"
+      integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+      crossorigin="anonymous"
+      nonce="{{ csp_nonce }}"
+    ></script>
+    <script nonce="{{ csp_nonce }}">
       // CSRF Token Hatasını (400) ve Linter Hatalarını Önleyen Script
       document.addEventListener("htmx:configRequest", (event) => {
         event.detail.headers["X-CSRFToken"] = "{{ csrf_token }}";
@@ -28,11 +35,19 @@
       document.documentElement.setAttribute("data-theme", savedTheme);
     </script>
 
+    <!-- Cesium 1.114.0: cesium.com CORS desteklemediği için SRI ile aynı dosya jsDelivr'den -->
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css"
+      href="https://cdn.jsdelivr.net/npm/cesium@1.114.0/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
+      integrity="sha384-k4+MvO7e2DfH7ta5aYy7vFJwZHsSLA2mrtvWRd8aYAgWlNVJosacivnpKlz1R6nY"
+      crossorigin="anonymous"
     />
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/cesium@1.114.0/Build/Cesium/Cesium.js"
+      integrity="sha384-s/4fNXRrqVEwXXdh41s7e/ZDYngErBeaPOPLNgJQ4/Cms8theyOJn4D/Dmmhxaft"
+      crossorigin="anonymous"
+      nonce="{{ csp_nonce }}"
+    ></script>
   </head>
 
   <body class="bg-base-200 min-h-screen flex flex-col overflow-x-hidden">
@@ -249,7 +264,7 @@
       </div>
     </div>
 
-    <script>
+    <script nonce="{{ csp_nonce }}">
       const switcher = document.getElementById("theme-switcher");
 
       // Sayfa yenilendiğinde checkbox durumunu senkronize et

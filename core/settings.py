@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.csp import CSP
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -83,6 +84,36 @@ if SECURE_HSTS_SECONDS == 0:
 
 CESIUM_TOKEN = os.environ.get("CESIUM_ION_TOKEN")
 
+# Content Security Policy — şimdilik yalnızca RAPOR modunda (hiçbir şeyi engellemez).
+# İhlaller tarayıcı konsolunda görünür; temizlendikten sonra SECURE_CSP ile zorunlu yapılacak.
+SECURE_CSP_REPORT_ONLY = {
+    "default-src": [CSP.SELF],
+    # Cesium WebAssembly kullanır (wasm-unsafe-eval). Cesium'un widget'ları ayrıca
+    # string eval kullanıyor ve şablonlarda inline on*="" handler'ları var: zorunlu
+    # moda geçmeden önce bunlar ele alınacak (raporda görünürler).
+    "script-src": [
+        CSP.SELF,
+        CSP.NONCE,
+        CSP.WASM_UNSAFE_EVAL,
+        "https://unpkg.com",
+        "https://cdn.jsdelivr.net",
+    ],
+    "style-src": [CSP.SELF, CSP.UNSAFE_INLINE, "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+    "font-src": [CSP.SELF, "https://fonts.gstatic.com"],
+    "img-src": [CSP.SELF, "data:", "blob:", "https:"],
+    # Cesium: kütüphane dosyaları jsDelivr'den, arazi/harita verisi Cesium ion'dan
+    "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://*.cesium.com", "https://*.virtualearth.net"],
+    "worker-src": [CSP.SELF, "blob:"],
+    "object-src": [CSP.NONE],
+    "base-uri": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
+}
+
+# Admin paneli yolu: tahmin edilmesi zor bir değer verin (ör. "yonetim-x7k2/").
+# Tanımlı değilse varsayılan "admin/" kullanılır.
+ADMIN_URL = os.environ.get("ADMIN_URL", "admin/").strip("/") + "/"
+
 LOGIN_REDIRECT_URL = "home"  # Giriş yapınca gidilecek sayfa
 LOGOUT_REDIRECT_URL = "login"  # Çıkış yapınca gidilecek sayfa
 
@@ -105,6 +136,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -141,6 +173,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.csp",
                 "core.context_processors.version_info",
             ],
         },

@@ -128,3 +128,32 @@ class PagesViewsTestCase(TestCase):
         self.assertFalse(settings.DEBUG)
         self.assertNotIn("django_browser_reload", settings.INSTALLED_APPS)
         self.assertEqual(self.client.get("/__reload__/events/").status_code, 404)
+
+    def test_csp_report_only_header_with_nonce(self):
+        response = self.client.get(reverse("vario_simulator"))
+        policy = response.headers["Content-Security-Policy-Report-Only"]
+        # Henüz zorunlu (engelleyen) politika yok
+        self.assertNotIn("Content-Security-Policy", response.headers)
+        nonce = response.context["csp_nonce"]
+        self.assertIn(f"'nonce-{nonce}'", policy)
+        self.assertIn("frame-ancestors 'none'", policy)
+        self.assertIn(f'nonce="{nonce}"', response.content.decode("utf-8"))
+
+    def test_external_scripts_have_integrity(self):
+        content = self.client.get(reverse("vario_simulator")).content.decode("utf-8")
+        self.assertIn('integrity="sha384-', content)
+        self.assertNotIn("https://cesium.com/downloads", content)
+
+    def test_flight_visualizer_sample_uses_json_script(self):
+        response = self.client.post(reverse("flight_visualizer"), {"show_sample": "true"})
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode("utf-8")
+        self.assertIn('<script id="flight-points" type="application/json">[[', content)
+        self.assertIn('<script id="cesium-token" type="application/json">', content)
+        self.assertNotIn("const rawPoints = [[", content)
+
+
+class AdminUrlTestCase(TestCase):
+    def test_admin_url_from_settings(self):
+        from django.conf import settings
+        self.assertEqual(reverse("admin:index"), f"/{settings.ADMIN_URL}")
