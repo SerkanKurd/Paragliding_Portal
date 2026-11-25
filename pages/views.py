@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -148,8 +149,20 @@ def flight_visualizer_view(request):
                     status=400,
                 )
 
+        if not flight_data:
+            logger.error("Örnek IGC dosyası bulunamadı")
+            template = (
+                "partials/flight_3d_getfile_partial.html"
+                if request.headers.get("HX-Request")
+                else "includes/flight_3d_getfile.html"
+            )
+            return render(
+                request, template, {"error": "Örnek uçuş şu anda yüklenemiyor."}, status=500
+            )
+
         context = {
-            "flight_points": flight_data,
+            # JSON metni yerine Python listesi: şablonda json_script ile güvenle gömülür
+            "flight_points": json.loads(flight_data),
             "cesium_token": settings.CESIUM_TOKEN,
         }
         return render(request, "includes/flight_3d.html", context)
