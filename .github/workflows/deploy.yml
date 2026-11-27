@@ -103,6 +103,58 @@ jobs:
             type=ref,event=branch
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
+      - name: 🧪 Test İmajını Derle (amd64)
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: .
+          file: ./dockerfile
+          load: true
+          platforms: linux/amd64
+          tags: ypportal:ci-test
+          cache-from: type=gha
+          provenance: false
+
+      - name: 🚦 Container Duman Testi
+        # Sunucudaki docker-compose ile aynı komut ve volume düzeniyle çalıştırır.
+        run: |
+          set -euo pipefail
+          IMG=ypportal:ci-test
+          ENVS="-e DEBUG=False -e ALLOWED_HOSTS=localhost -e SECRET_KEY=ci-smoke-test-$(openssl rand -hex 24)"
+
+          wait_ok() {
+            for i in $(seq 1 30); do
+              if curl -fsS -o /dev/null "http://localhost:$1/vario_simulator/"; then return 0; fi
+              sleep 1
+            done
+            echo "Uygulama $1 portunda cevap vermedi"; docker logs "$2" || true; return 1
+          }
+
+          echo "== 1) Root olmayan kullanıcı"
+          uid=$(docker run --rm --entrypoint id $IMG -u)
+          echo "uid=$uid"; test "$uid" != "0"
+
+          echo "== 2) Yeni volume: collectstatic + gunicorn (compose komutuyla)"
+          docker volume create ci_static
+          docker run -d --name ci-web $ENVS -v ci_static:/app/staticfiles -p 8000:8000 \
+            $IMG uv run gunicorn core.wsgi:application --bind 0.0.0.0:8000
+          wait_ok 8000 ci-web
+          docker exec ci-web test -f /app/staticfiles/admin/css/base.css
+          docker exec ci-web test -f /app/staticfiles/css/dist/styles.css
+          if docker logs ci-web 2>&1 | grep -q "UYARI"; then docker logs ci-web; exit 1; fi
+          docker logs ci-web 2>&1 | grep -E "Booting worker" | head -3
+
+          echo "== 3) Root'a ait eski volume: uyarı verip yine de açılmalı"
+          docker volume create ci_old_static
+          # Sunucudaki gibi: root'a ait ve eski tarihli dosyalar içeren volume
+          docker run --rm -u 0 --entrypoint sh -v ci_old_static:/app/staticfiles $IMG -c \
+            "find /app/staticfiles -type f -exec touch -d '2000-01-01' {} + && chown -R root:root /app/staticfiles"
+          docker run -d --name ci-web-old $ENVS -v ci_old_static:/app/staticfiles -p 8001:8000 \
+            $IMG uv run gunicorn core.wsgi:application --bind 0.0.0.0:8000
+          wait_ok 8001 ci-web-old
+          docker logs ci-web-old 2>&1 | grep "UYARI"
+
+          docker rm -f ci-web ci-web-old
+
       # PR'larda imaj yalnızca derlenir (Dockerfile doğrulanır), GHCR'a gönderilmez.
       - name: 📦 Docker İmajını Derle (main'de GHCR'a Gönder)
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0

@@ -16,3 +16,11 @@ README.md
 .vscode/
 .idea/
 Thumbs.db
+# Yerel ortam ve araç dosyaları (imaja girmemeli)
+.venv/
+.ruff_cache/
+.github/
+.claude/
+staticfiles/
+db.sqlite3
+*.log
